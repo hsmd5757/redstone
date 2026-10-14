@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/redstone/', // <-- Add this line so GitHub Pages finds your assets
+    base: '/redstone/', 
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
