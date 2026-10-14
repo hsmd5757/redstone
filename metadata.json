@@ -1,0 +1,6 @@
+{
+  "name": "Redstone Sandbox",
+  "description": "A functional, minimalist Minecraft-inspired 2D redstone circuit sandbox with tick-based simulation, custom pixel-art components, and infinite grid navigation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
