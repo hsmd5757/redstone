@@ -1,0 +1,770 @@
+MASTER FEATURE IMPLEMENTATION PROMPT
+ONLINE COLLABORATION ROOMS
+REAL-TIME MULTIPLAYER FOR THE EXISTING REDSTONE SANDBOX
+
+You are a senior full-stack engineer specializing in real-time multiplayer applications, collaborative editors, WebSocket communication, authoritative server architecture, data synchronization, and secure web applications.
+
+Your task is to implement a functional online collaboration system in my EXISTING Minecraft-inspired Redstone sandbox application.
+
+Users must be able to create online rooms, invite friends using a shareable link, and collaboratively build and simulate Redstone circuits in the same shared world from different computers and browsers.
+
+IMPORTANT:
+This is an implementation task, not a planning-only task.
+
+Inspect the existing project, choose an architecture that fits it, implement the feature, run available tests, and report the actual results.
+
+Do not rebuild the application from scratch.
+Do not remove existing functionality.
+Do not replace working features with mockups.
+Do not claim that multiplayer works unless real network synchronization is implemented and tested.
+
+==================================================
+1. FIRST: INSPECT THE EXISTING PROJECT
+==================================================
+
+Before changing code, inspect the current application.
+
+Identify:
+
+- Frontend framework.
+- Existing world data model.
+- Component architecture.
+- Redstone simulation engine.
+- Wire connectivity system.
+- Wireless Input and Wireless Output components, if implemented.
+- Grouping and transformation system.
+- Horizontal Flip and Vertical Flip functionality, if implemented.
+- Save/load implementation.
+- Existing persistence mechanism.
+- Existing authentication system, if any.
+- Existing backend, if any.
+- Existing deployment configuration.
+- Existing state management.
+- Existing testing infrastructure.
+
+Determine which systems can be reused.
+
+Preserve the current application architecture wherever practical.
+
+Do not assume a backend exists.
+
+If backend infrastructure is missing, implement a suitable backend if the available development environment supports it. If external credentials or deployment access are required, clearly identify what remains necessary.
+
+==================================================
+2. ONLINE ROOM SYSTEM
+==================================================
+
+Add an Online Collaboration feature to the existing application.
+
+The interface should include:
+
+- Create Room.
+- Join Room.
+- Copy Invitation Link.
+- Room Information.
+- Participant List.
+- Leave Room.
+- Room Settings.
+- Connection Status.
+
+The interface should match the existing dark, minimalist engineering-style design.
+
+Do not unnecessarily redesign the main workspace.
+
+A user should be able to create a room and receive a unique invitation URL.
+
+Example:
+
+https://your-domain.example/room/ROOM_ID
+
+This is an illustrative URL format. Use the actual application's deployed domain and routing configuration.
+
+When another user opens the invitation URL:
+
+1. Validate the room.
+2. Validate access permissions.
+3. Establish the real-time connection.
+4. Retrieve the current shared world state.
+5. Subscribe to subsequent world changes.
+6. Display the participant list.
+7. Allow the user to collaborate according to their permissions.
+
+Do not use fake participants or simulated synchronization.
+
+==================================================
+3. REAL-TIME SHARED WORLD
+==================================================
+
+All participants in a room must collaborate on the same authoritative world.
+
+When one participant changes the world, other connected participants should receive that change promptly.
+
+Synchronize supported operations, including:
+
+- Placing components.
+- Deleting components.
+- Moving components.
+- Rotating components.
+- Horizontal Flip.
+- Vertical Flip.
+- Editing component properties.
+- Creating and deleting Redstone Dust variations.
+- Editing wire connection permissions.
+- Renaming user-facing wire IDs.
+- Grouping components.
+- Ungrouping components.
+- Moving groups.
+- Rotating groups.
+- Flipping groups.
+- Creating and editing Note Block annotations.
+- Changing Wireless Input states.
+- Editing wireless channel IDs.
+- Updating other supported world properties.
+
+Only synchronize operations supported by the existing application.
+
+Do not introduce references to nonexistent component types.
+
+Preserve the existing world data model.
+
+IMPORTANT DISTINCTION:
+
+The shared world, camera state, selection state, and temporary UI state are different things.
+
+Synchronize persistent world modifications.
+
+Synchronize ephemeral collaboration information when useful.
+
+Do not force every participant to use the same:
+
+- Camera position.
+- Zoom level.
+- Selected object.
+- Active component.
+- Placement mode.
+- Open panel.
+- Mouse position.
+
+Each user should control their own workspace independently.
+
+==================================================
+4. CHOOSE A REAL-TIME BACKEND
+==================================================
+
+Inspect the current project before choosing a backend.
+
+Evaluate suitable options such as:
+
+- A WebSocket server.
+- A managed real-time backend.
+- An existing backend already present in the project.
+- Another appropriate production-capable synchronization service.
+
+Select the simplest reliable solution compatible with the current architecture.
+
+Consider:
+
+- Authentication.
+- Room membership.
+- Persistent world storage.
+- Real-time message delivery.
+- Reconnection.
+- Security.
+- Hosting.
+- Development complexity.
+- Deployment requirements.
+- Operating cost.
+
+Do not add multiple competing backend systems unnecessarily.
+
+If an appropriate backend already exists, prefer integrating with it.
+
+If no backend exists, implement the necessary server-side components when possible.
+
+Keep server credentials and privileged secrets out of browser code.
+
+Do not rely on localStorage, BroadcastChannel, or a browser-only mechanism as the primary solution for collaboration between separate computers over the internet.
+
+Those technologies may be useful for other purposes, but they do not replace a real shared backend.
+
+==================================================
+5. AUTHORITATIVE ROOM STATE
+==================================================
+
+Implement a consistent source of truth for each shared world.
+
+The server or trusted backend must validate world mutations.
+
+Use an appropriate synchronization model.
+
+Possible approaches include:
+
+- Authoritative server processing.
+- Versioned operations.
+- Incremental updates.
+- Revision numbers.
+- Conflict detection.
+- Snapshot synchronization.
+
+Choose the approach that fits the existing world architecture.
+
+Each world mutation should have sufficient information to identify:
+
+- The operation type.
+- The target object or objects.
+- The relevant data.
+- The requesting participant.
+- The operation identifier.
+- The expected revision or equivalent conflict information, where necessary.
+
+Requirements:
+
+- Prevent duplicate operations from being applied twice.
+- Handle out-of-order messages safely.
+- Validate operation payloads.
+- Reject invalid mutations.
+- Maintain consistent world revisions.
+- Avoid stale clients overwriting newer world state.
+- Preserve stable component identities.
+- Avoid unnecessary full-world broadcasts.
+- Recover safely from synchronization failures.
+
+Do not rely solely on client-side validation.
+
+Do not blindly trust client-supplied owner IDs, permissions, or participant identities.
+
+==================================================
+6. INITIAL WORLD SYNCHRONIZATION
+==================================================
+
+When a participant joins a room:
+
+1. Authenticate or validate their access.
+2. Retrieve the current authoritative room state.
+3. Receive the current world revision.
+4. Initialize the local world from that snapshot.
+5. Subscribe to subsequent operations.
+6. Apply subsequent operations in a consistent order.
+
+Avoid applying the same mutation both through the initial snapshot and the live update stream.
+
+If the client falls behind the server revision, detect the gap.
+
+Recover through missing operations or a new authoritative snapshot.
+
+Do not leave the world partially synchronized.
+
+Validate incoming snapshots before replacing the current local state.
+
+If loading fails, preserve the previous valid local state where possible.
+
+==================================================
+7. PARTICIPANT LIST AND PRESENCE
+==================================================
+
+Show the current participants in the room.
+
+For each participant, display:
+
+- Display name.
+- Distinct participant color.
+- Role.
+- Connection status where useful.
+
+Display:
+
+- Total participant count.
+- Room owner.
+- Current room status.
+
+Participant presence should update as users join and leave.
+
+Remove stale presence information after disconnects or expired sessions.
+
+Do not treat a browser tab's claimed identity as sufficient authentication.
+
+Use the existing authentication system if one is available.
+
+If no authentication exists, implement a suitable identity and authorization strategy for the project's requirements.
+
+For anonymous participation, use server-issued session identities and secure room access controls rather than trusting arbitrary client-provided user identifiers.
+
+==================================================
+8. LIVE CURSORS AND REMOTE SELECTION
+==================================================
+
+Display remote participants' cursors in the shared world.
+
+Requirements:
+
+- Use a distinct color for each participant.
+- Show the participant's display name.
+- Update cursor positions in real time.
+- Optionally show which component another participant is selecting.
+- Remove stale cursors after disconnection.
+- Throttle cursor updates to reduce network traffic.
+- Avoid persisting cursor positions as world objects.
+
+Represent remote cursor positions in world coordinates or an equivalent camera-independent coordinate system.
+
+Every client must render remote cursors through its own camera transformation.
+
+Moving one user's camera must not move another user's world.
+
+Different participants may use different zoom levels and camera positions.
+
+Do not synchronize remote mouse positions as screen coordinates that only work for identical viewport sizes.
+
+==================================================
+9. ROOM ROLES AND PERMISSIONS
+==================================================
+
+Support at least these roles:
+
+OWNER:
+- Manage room settings.
+- Invite participants.
+- Remove participants.
+- Promote or demote participants where appropriate.
+- Assign supported editing permissions.
+- Save or export the shared world.
+- Close the room.
+
+EDITOR:
+- Modify the shared world.
+- Place and delete components.
+- Edit supported component properties.
+- Create and modify circuits.
+- Use supported grouping and transformation tools.
+
+VIEWER:
+- Inspect the shared world.
+- Navigate their own camera.
+- Zoom in and out.
+- Select or inspect components where appropriate.
+- Cannot modify the authoritative shared world.
+
+The owner must not lose control of the room merely because a client-side UI state changes.
+
+Enforce all permissions on the server.
+
+A modified client must not be able to bypass viewer restrictions.
+
+Validate room membership and permissions for every mutation.
+
+==================================================
+10. INVITATION LINKS AND ROOM SECURITY
+==================================================
+
+Generate unique room identifiers.
+
+Invitation links must not automatically grant unlimited privileges.
+
+Support appropriate access policies, such as:
+
+- Private room.
+- Invitation-based room.
+- Restricted room access.
+
+Where practical, support revocable invitation tokens or equivalent access controls.
+
+Requirements:
+
+- Validate room existence.
+- Validate invitation access.
+- Enforce participant limits if configured.
+- Prevent unauthorized room mutations.
+- Limit message sizes.
+- Validate incoming data.
+- Apply rate limits where appropriate.
+- Use secure transport in production.
+- Avoid exposing private credentials.
+- Avoid leaking private world data.
+- Handle expired or revoked invitations.
+
+Do not use predictable room IDs as the only security mechanism.
+
+Do not put backend service secrets in frontend environment variables that are exposed to the browser.
+
+If public browser configuration is required, use only credentials explicitly designed to be public and enforce authorization on the server.
+
+==================================================
+11. CONCURRENT EDITING AND CONFLICT RESOLUTION
+==================================================
+
+Multiple users should be able to edit different parts of the same world simultaneously.
+
+Handle conflicts safely.
+
+Examples:
+
+- Two users place components in different cells.
+- Two users modify different objects.
+- Two users edit the same component.
+- One user deletes a component while another edits it.
+- One user moves a group while another modifies one of its children.
+- Two users modify the same wireless channel configuration.
+- A user submits an edit based on an outdated world revision.
+
+Requirements:
+
+- Preserve unrelated concurrent edits.
+- Detect conflicting modifications.
+- Prevent duplicate objects.
+- Prevent stale state from silently overwriting newer state.
+- Preserve group integrity.
+- Preserve component identities.
+- Preserve overlapping wire variations.
+- Communicate rejected conflicting operations to the client.
+
+Use server-authoritative ordering, revision checks, operation validation, or another suitable strategy.
+
+Do not implement a complex CRDT unless the existing editing model actually benefits from it.
+
+For a first reliable version, server-authoritative mutations with revision checks are acceptable.
+
+==================================================
+12. REDSTONE SIMULATION SYNCHRONIZATION
+==================================================
+
+The collaboration system must preserve correct Redstone behavior.
+
+Inspect the current simulation architecture before choosing how simulation state is shared.
+
+Consider:
+
+- Server-authoritative simulation.
+- Deterministic simulation with authoritative shared inputs.
+- Another architecture appropriate for the existing engine.
+
+Do not allow independent clients to overwrite authoritative simulation results arbitrarily.
+
+Requirements:
+
+- Preserve existing component behavior.
+- Preserve supported component timing.
+- Preserve wire connectivity rules.
+- Preserve mutual Connects With permissions.
+- Preserve physical geometry requirements.
+- Preserve feedback-loop handling.
+- Prevent duplicate scheduled events where applicable.
+- Ensure all participants observe consistent signal states.
+- Separate camera movement from simulation updates.
+- Separate rendering from authoritative simulation state.
+
+If the simulation cannot immediately run on the server, implement a deliberate synchronization architecture and clearly identify its limitations.
+
+Do not claim fully authoritative multiplayer simulation unless it is actually implemented.
+
+==================================================
+13. WIRELESS SIGNAL SYSTEM COMPATIBILITY
+==================================================
+
+If Wireless Input and Wireless Output components exist in the current project, integrate them into multiplayer synchronization.
+
+Requirements:
+
+- Preserve wireless channel IDs.
+- Preserve immutable component UUIDs.
+- Synchronize input state changes.
+- Keep outputs consistent with their matching channels.
+- Preserve multiple-input aggregation behavior.
+- Preserve multiple-output subscriptions.
+- Rebuild or update channel registries correctly.
+- Handle component deletion and channel renaming.
+- Prevent duplicate wireless propagation.
+- Preserve save/load behavior.
+
+If wireless components have not yet been implemented, do not fabricate them as part of the room system.
+
+Keep the room architecture extensible so they can be synchronized later.
+
+==================================================
+14. SAVE AND LOAD SHARED WORLDS
+==================================================
+
+Provide reliable shared-world persistence.
+
+Use the existing persistence architecture where possible.
+
+Requirements:
+
+- Persist the authoritative world.
+- Preserve object IDs and UUIDs.
+- Preserve component positions.
+- Preserve wire permissions.
+- Preserve independent overlapping wire variations.
+- Preserve groups and transforms.
+- Preserve annotations.
+- Preserve supported wireless component data.
+- Preserve supported world settings.
+- Preserve schema versions and migrations.
+
+Only authorized participants may save or overwrite shared worlds.
+
+Handle save failures safely.
+
+Do not expose database credentials in client code.
+
+Do not store temporary cursor positions or transient selection states as persistent world objects.
+
+If the application currently saves only to browser storage, add suitable server-side persistence when required and supported by the available environment.
+
+==================================================
+15. DISCONNECT AND RECONNECT
+==================================================
+
+Handle temporary network failures gracefully.
+
+Requirements:
+
+- Detect connection loss.
+- Display a connection status indicator.
+- Attempt reconnection when appropriate.
+- Revalidate access.
+- Obtain the latest world revision.
+- Recover missing operations or retrieve a fresh snapshot.
+- Avoid replaying already-applied mutations.
+- Avoid blindly applying stale offline edits.
+- Handle room closure while disconnected.
+- Handle revoked invitation access.
+- Handle server restart where applicable.
+
+If offline editing is supported, validate queued mutations against the latest authoritative state before applying them.
+
+Do not silently discard unsynchronized changes.
+
+==================================================
+16. ROOM LIFECYCLE
+==================================================
+
+Implement appropriate room lifecycle behavior.
+
+Requirements:
+
+- Create rooms.
+- Join rooms.
+- Leave rooms.
+- Handle owner departure.
+- Handle empty rooms.
+- Close rooms.
+- Persist rooms when appropriate.
+- Expire temporary rooms according to an explicit policy.
+- Clean up stale presence data.
+- Release unused subscriptions and connections.
+
+Define what happens when the owner disconnects.
+
+For example, the room may remain available for a configured period, and ownership may be transferred according to an explicit policy.
+
+Do not unexpectedly delete persistent worlds merely because the owner closes a browser tab.
+
+==================================================
+17. USER INTERFACE AND WORKSPACE INTEGRATION
+==================================================
+
+Integrate the room feature into the existing UI.
+
+Create a compact room interface containing:
+
+- Room name or identifier.
+- Participant count.
+- Participant list.
+- Invitation link.
+- Copy Link button.
+- Connection status.
+- Room settings.
+- Leave Room button.
+
+Show clear loading, success, and error states.
+
+Do not unnecessarily resize the world canvas.
+
+Do not change the camera when opening or closing the collaboration panel.
+
+Do not intercept existing mouse or keyboard controls.
+
+Ensure that editing text fields does not trigger WASD camera movement.
+
+Preserve existing:
+
+- Component placement.
+- Selection.
+- Right-click cancellation.
+- Escape cancellation.
+- Group transforms.
+- Horizontal Flip.
+- Vertical Flip.
+- Note Block editing.
+- Wireless signal controls, if present.
+- Potato Mode.
+
+Do not remove or replace existing UI features to make room for multiplayer.
+
+==================================================
+18. PERFORMANCE AND NETWORK EFFICIENCY
+==================================================
+
+The collaboration system must scale reasonably with world size and participant count.
+
+Requirements:
+
+- Send incremental operations rather than the entire world after each edit.
+- Avoid broadcasting unchanged state.
+- Throttle ephemeral cursor updates.
+- Batch compatible operations when useful.
+- Avoid unnecessary serialization.
+- Validate incoming operations efficiently.
+- Avoid rebuilding the entire world after every remote mutation.
+- Avoid unnecessary simulation recalculations.
+- Avoid blocking rendering while processing network messages.
+- Clean up listeners and subscriptions when leaving rooms.
+- Avoid unbounded queues.
+- Handle slow clients and temporary network congestion.
+
+Keep network updates separate from rendering where practical.
+
+Do not allow a large incoming batch to freeze the application indefinitely.
+
+Use controlled batching or scheduling when appropriate.
+
+==================================================
+19. TESTING
+==================================================
+
+Run the existing build and test suite.
+
+Add suitable unit and integration tests.
+
+Test with multiple genuinely connected browser sessions or separate devices.
+
+Do not consider a local mock or a single-client simulation sufficient proof of internet multiplayer.
+
+Test:
+
+1. Room creation.
+2. Joining through an invitation link.
+3. Joining from a separate browser session.
+4. Joining from another device.
+5. Initial world synchronization.
+6. Remote component placement.
+7. Remote component deletion.
+8. Remote property changes.
+9. Group movement and rotation.
+10. Horizontal Flip and Vertical Flip, if implemented.
+11. Wire permission changes.
+12. Wireless signal synchronization, if implemented.
+13. Remote cursors.
+14. Participant presence.
+15. Viewer restrictions.
+16. Owner permissions.
+17. Unauthorized mutation attempts.
+18. Concurrent edits.
+19. Duplicate operation handling.
+20. Stale revision handling.
+21. Disconnect and reconnect.
+22. Room closure.
+23. Shared save/load.
+24. Large-world updates.
+25. Network interruptions.
+26. Cleanup after leaving a room.
+
+Fix regressions introduced by the changes.
+
+Clearly identify tests that could not be run.
+
+Do not claim that cross-device multiplayer was tested if only local unit tests were executed.
+
+==================================================
+20. IMPLEMENTATION ORDER
+==================================================
+
+PHASE 1:
+Inspect the current codebase and identify the existing frontend, backend, simulation, and persistence architecture.
+
+PHASE 2:
+Choose a suitable real-time backend and synchronization model.
+
+PHASE 3:
+Implement room creation, room joining, invitation links, and room membership.
+
+PHASE 4:
+Implement authoritative world mutations and incremental synchronization.
+
+PHASE 5:
+Implement participant presence and live cursors.
+
+PHASE 6:
+Implement server-side permissions and conflict handling.
+
+PHASE 7:
+Implement shared persistence and reconnection recovery.
+
+PHASE 8:
+Integrate the UI into the existing application.
+
+PHASE 9:
+Run tests and fix regressions.
+
+PHASE 10:
+Verify the actual deployment requirements and test across separate sessions.
+
+Implement the simplest reliable version first.
+
+Do not introduce unnecessary infrastructure or rewrite unrelated systems.
+
+==================================================
+21. DEPLOYMENT REQUIREMENTS
+==================================================
+
+Inspect the existing deployment setup.
+
+Determine whether the current hosting environment supports the chosen real-time architecture.
+
+If additional infrastructure is needed:
+
+- Add the necessary configuration files.
+- Document required environment variables.
+- Provide an example environment file containing placeholders only.
+- Explain how to configure the backend.
+- Explain how to run the backend locally.
+- Explain how to connect the frontend.
+- Explain how to deploy the application.
+- Keep secrets out of version control.
+- Do not invent real credentials or deployment URLs.
+
+If deployment access is unavailable, implement what can be completed and identify the remaining manual setup.
+
+A working development implementation must not be described as a deployed production service unless it has actually been deployed and verified.
+
+==================================================
+22. FINAL REPORT
+==================================================
+
+After implementation, report:
+
+1. What was implemented.
+2. Which files were changed.
+3. Which backend or real-time service was chosen.
+4. How rooms are created.
+5. How invitation links work.
+6. How world changes are synchronized.
+7. How concurrent edits are handled.
+8. How participant permissions are enforced.
+9. How reconnection works.
+10. How shared worlds are persisted.
+11. Which tests were executed.
+12. Which tests passed or failed.
+13. Whether separate browser sessions were tested.
+14. Whether separate devices were tested.
+15. Whether internet deployment was verified.
+16. What configuration remains necessary.
+17. Any known limitations.
+
+Never fabricate successful tests, performance measurements, or deployment status.
+
+FINAL GOAL:
+
+Deliver a functional online collaboration system integrated into the existing Redstone sandbox.
+
+Multiple users must be able to join the same room through the internet, observe each other's world modifications in real time, and collaboratively build Redstone circuits without corrupting the shared world or breaking existing features.
